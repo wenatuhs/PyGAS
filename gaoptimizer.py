@@ -5,6 +5,7 @@ import numpy as np
 from deap import base
 from deap import creator
 from deap import tools
+from scoop import futures
 from tqdm import tqdm
 
 
@@ -79,6 +80,7 @@ class NSGAII:
         toolbox.register("mutate", tools.mutPolynomialBounded,
                          low=0, up=1, eta=self.ETAM, indpb=self.MIDPB)
         toolbox.register("select", tools.selNSGA2)
+        toolbox.register("map", futures.map)
         self.toolbox = toolbox
 
     def evolve(self, npop, ngen, seed=None):
@@ -193,6 +195,7 @@ class SPEA2:
                          low=0, up=1, eta=self.ETAM, indpb=self.MIDPB)
         toolbox.register("select", tools.selSPEA2)
         toolbox.register("selectTournament", tools.selTournament, tournsize=2)
+        toolbox.register("map", futures.map)
         self.toolbox = toolbox
 
     def evolve(self, npop, narc, ngen, seed=None):
