@@ -65,11 +65,20 @@ def evaluate(x):
     return [nemit_t(data)[0], current_r(data), skewness(data)]
 
 
-# Optimizer setup
-opt = NSGAII(evaluate)
-opt.NDIM = 8
-opt.OBJ = (-1, 1, -1)
-opt.setup()
+if __name__ == '__main__':
+    # Optimizer setup
+    opt = NSGAII(evaluate)
+    opt.NDIM = 8
+    opt.OBJ = (-1, 1, -1)
+    opt.setup()
 
-# Let’s rock!
-opt.evolve(12, 2)
+    # Let’s rock!
+    opt.evolve(12, 2)
+
+    # Post-process
+    xyz = np.array([ind.fitness.values for ind in opt.pop])
+    plt.plot(xyz[:, 0], xyz[:, 1], 'b.')
+    print(xyz)
+    core.run(gen_patch(opt.pop[0]), 'cool2', 1)
+    data = core.get_data('cool2', -1, 'g')
+    dist_l(data, 20)
