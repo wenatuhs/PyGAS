@@ -122,8 +122,10 @@ class NSGAII:
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
             fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
-            for ind, fit in zip(invalid_ind, fitnesses):
-                ind.fitness.values = fit
+            with tqdm(total=len(invalid_ind), desc='Population', ascii=True) as pbar:
+                for ind, fit in zip(invalid_ind, fitnesses):
+                    pbar.update(1)
+                    ind.fitness.values = fit
 
             # Select the next generation population
             pop = toolbox.select(pop + offspring, npop)
@@ -222,8 +224,10 @@ class SPEA2:
             # Step 2 Fitness assignment
             invalid_ind = [ind for ind in pop if not ind.fitness.valid]
             fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
-            for ind, fit in zip(invalid_ind, fitnesses):
-                ind.fitness.values = fit
+            with tqdm(total=len(invalid_ind), desc='Population', ascii=True) as pbar:
+                for ind, fit in zip(invalid_ind, fitnesses):
+                    pbar.update(1)
+                    ind.fitness.values = fit
 
             # Step 3 Environmental selection
             archive = toolbox.select(pop + archive, k=narc)
