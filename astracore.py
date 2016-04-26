@@ -202,7 +202,7 @@ class AstraCore:
 
         cmd = ['mkdir', sim]
 
-        mk = Popen(cmd, cwd=self.root, shell=(os.name != 'posix'))
+        mk = Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=self.root, shell=(os.name != 'posix'))
         out = mk.communicate()
 
         sim_path = os.path.join(self.root, sim)
@@ -211,7 +211,7 @@ class AstraCore:
         else:
             cmd = 'del /s/q/f *'
 
-            rm = Popen(cmd, cwd=sim_path, shell=1)
+            rm = Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=sim_path, shell=1)
             out = rm.communicate()
 
         if os.name == 'posix':
@@ -220,7 +220,7 @@ class AstraCore:
         else:
             cmd = 'xcopy . .\{} /y'.format(sim)
 
-        cp = Popen(cmd, cwd=self.root)
+        cp = Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=self.root)
         out = cp.communicate()
 
         if self.dist is None:
@@ -231,7 +231,7 @@ class AstraCore:
 
         cmd = ['generator', self.dist]
 
-        gen = Popen(cmd, stdout=PIPE, cwd=sim_path)
+        gen = Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=sim_path)
         out = gen.communicate()
 
         if self.main is None:
@@ -242,7 +242,7 @@ class AstraCore:
 
         cmd = ['Astra', self.main]
 
-        do = Popen(cmd, stdout=PIPE, cwd=sim_path)
+        do = Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=sim_path)
         out = do.communicate()
 
         # Log the simulation result
