@@ -57,23 +57,22 @@ def gen_patch(x):
     return patch
 
 
-def evaluate(x):
-    sim = 'test2'
+def evaluate(x, sim):
     patch = gen_patch(x)
     core.run(patch, sim)
     data = core.get_data(sim, -1, 'g')
     return [nemit_t(data)[0], current_r(data), skewness(data)]
 
 
-if __name__ == '__main__':
-    # Optimizer setup
-    opt = NSGAII(evaluate)
-    opt.NDIM = 8
-    opt.OBJ = (-1, 1, -1)
-    opt.setup()
+# Optimizer setup
+opt = NSGAII(evaluate)
+opt.NDIM = 8
+opt.OBJ = (-1, 1, -1)
+opt.setup()
 
+if __name__ == '__main__':
     # Let’s rock!
-    opt.evolve(12, 2)
+    opt.evolve(16, 2)
 
     # Post-process
     xyz = np.array([ind.fitness.values for ind in opt.pop])

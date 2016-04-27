@@ -95,8 +95,10 @@ class NSGAII:
             raise OptimizerError('population size has to be a multiple of 4!')
         random.seed(seed)
         toolbox = self.toolbox
-
-        stats = tools.Statistics(lambda ind: ind.fitness.values)
+        
+        def ind_fitness(ind):
+            return ind.fitness.values
+        stats = tools.Statistics(ind_fitness)
         stats.register("avg", np.mean, axis=0)
         stats.register("std", np.std, axis=0)
         stats.register("min", np.min, axis=0)
@@ -123,7 +125,8 @@ class NSGAII:
 
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-            fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+            sims = ['t{0:03d}'.format(i+1) for i in range(len(invalid_ind))]
+            fitnesses = toolbox.map(toolbox.evaluate, invalid_ind, sims)
             with tqdm(total=len(invalid_ind), desc='Population', ascii=True) as pbar:
                 for ind, fit in zip(invalid_ind, fitnesses):
                     pbar.update(1)
@@ -210,7 +213,9 @@ class SPEA2:
         random.seed(seed)
         toolbox = self.toolbox
 
-        stats = tools.Statistics(lambda ind: ind.fitness.values)
+        def ind_fitness(ind):
+            return ind.fitness.values
+        stats = tools.Statistics(ind_fitness)
         stats.register("avg", np.mean, axis=0)
         stats.register("std", np.std, axis=0)
         stats.register("min", np.min, axis=0)
@@ -226,7 +231,8 @@ class SPEA2:
         for gen in tqdm(range(ngen), leave=True, ascii=True):
             # Step 2 Fitness assignment
             invalid_ind = [ind for ind in pop if not ind.fitness.valid]
-            fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+            sims = ['t{0:03d}'.format(i+1) for i in range(len(invalid_ind))]
+            fitnesses = toolbox.map(toolbox.evaluate, invalid_ind, sims)
             with tqdm(total=len(invalid_ind), desc='Population', ascii=True) as pbar:
                 for ind, fit in zip(invalid_ind, fitnesses):
                     pbar.update(1)
