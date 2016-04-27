@@ -72,7 +72,7 @@ opt.setup()
 
 if __name__ == '__main__':
     # Let’s rock!
-    opt.evolve(16, 2)
+    opt.evolve(8, 2, pre='../../../test')
 
     # Post-process
     xyz = np.array([ind.fitness.values for ind in opt.pop])

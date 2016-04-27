@@ -1,3 +1,4 @@
+import os
 import random
 import warnings
 
@@ -83,21 +84,23 @@ class NSGAII:
         toolbox.register("map", futures.map)
         self.toolbox = toolbox
 
-    def evolve(self, npop, ngen, seed=None):
+    def evolve(self, npop, ngen, seed=None, pre=''):
         """ Generate and evolve the population based on NSGA-II.
 
         Keyword arguments:
         npop -- population size.
         ngen -- number of generations.
         seed -- [None] the random seed.
+        pre -- [''] relative path of the root of the simulation folders.
         """
         if npop % 4:
             raise OptimizerError('population size has to be a multiple of 4!')
         random.seed(seed)
         toolbox = self.toolbox
-        
+
         def ind_fitness(ind):
             return ind.fitness.values
+
         stats = tools.Statistics(ind_fitness)
         stats.register("avg", np.mean, axis=0)
         stats.register("std", np.std, axis=0)
@@ -125,7 +128,7 @@ class NSGAII:
 
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-            sims = ['t{0:03d}'.format(i+1) for i in range(len(invalid_ind))]
+            sims = [os.path.join(pre, '{0:03d}'.format(i + 1)) for i in range(len(invalid_ind))]
             fitnesses = toolbox.map(toolbox.evaluate, invalid_ind, sims)
             with tqdm(total=len(invalid_ind), desc='Population', ascii=True) as pbar:
                 for ind, fit in zip(invalid_ind, fitnesses):
@@ -201,7 +204,7 @@ class SPEA2:
         toolbox.register("map", futures.map)
         self.toolbox = toolbox
 
-    def evolve(self, npop, narc, ngen, seed=None):
+    def evolve(self, npop, narc, ngen, seed=None, pre=''):
         """ Generate and evolve the population based on SPEA2.
 
         Keyword arguments:
@@ -209,12 +212,14 @@ class SPEA2:
         ngen -- number of generations.
         narc -- capacity of archive.
         seed -- [None] the random seed.
+        pre -- [''] relative path of the root of the simulation folders.
         """
         random.seed(seed)
         toolbox = self.toolbox
 
         def ind_fitness(ind):
             return ind.fitness.values
+
         stats = tools.Statistics(ind_fitness)
         stats.register("avg", np.mean, axis=0)
         stats.register("std", np.std, axis=0)
@@ -231,7 +236,7 @@ class SPEA2:
         for gen in tqdm(range(ngen), leave=True, ascii=True):
             # Step 2 Fitness assignment
             invalid_ind = [ind for ind in pop if not ind.fitness.valid]
-            sims = ['t{0:03d}'.format(i+1) for i in range(len(invalid_ind))]
+            sims = [os.path.join(pre, '{0:03d}'.format(i + 1)) for i in range(len(invalid_ind))]
             fitnesses = toolbox.map(toolbox.evaluate, invalid_ind, sims)
             with tqdm(total=len(invalid_ind), desc='Population', ascii=True) as pbar:
                 for ind, fit in zip(invalid_ind, fitnesses):
