@@ -1,3 +1,7 @@
+import sys
+import numpy as np
+import warnings
+
 from astracore import *
 from plotplugins import *
 from gaoptimizer import *
@@ -72,12 +76,16 @@ opt.setup()
 
 if __name__ == '__main__':
     # Let’s rock!
-    opt.evolve(8, 2, pre='../../../test')
+    try:
+      npop, ngen = (int(n) for n in sys.argv[1:])
+    except:
+      npop, ngen = 24, 2  # for test
+      warnings.warn("fallback to test case with npop={0}, ngen={1}!".format(npop, ngen), OptimizerWarning)
+    opt.evolve(npop, ngen, pre='../sims')
 
     # Post-process
+    with open('')
+    opt.pop
+    opt.log
     xyz = np.array([ind.fitness.values for ind in opt.pop])
-    plt.plot(xyz[:, 0], xyz[:, 1], 'b.')
     print(xyz)
-    core.run(gen_patch(opt.pop[0]), 'cool2', 1)
-    data = core.get_data('cool2', -1, 'g')
-    dist_l(data, 20)

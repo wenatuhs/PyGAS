@@ -215,10 +215,9 @@ class AstraCore:
             out = rm.communicate()
 
         if os.name == 'posix':
-            cmd = ['find', '.', '-maxdepth', '1', '-type', 'f', '-exec', 'cp', '{}',
-                   './{}'.format(sim), ';']
+            cmd = ['find', '.', '-maxdepth', '1', '-type', 'f', '-exec', 'cp', '{}', sim, ';']
         else:
-            cmd = 'xcopy . .\{} /y'.format(sim)
+            cmd = 'xcopy . {} /y'.format(sim)
 
         cp = Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=self.root)
         out = cp.communicate()
