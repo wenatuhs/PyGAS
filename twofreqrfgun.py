@@ -76,17 +76,17 @@ opt.setup()
 if __name__ == '__main__':
     # Let’s rock!
     try:
-      npop, ngen = (int(n) for n in sys.argv[1:])
+        npop, ngen = (int(n) for n in sys.argv[1:])
     except:
-      npop, ngen = 24, 2  # for test
-      warnings.warn("fallback to test case with npop={0}, ngen={1}!".format(npop, ngen), OptimizerWarning)
+        npop, ngen = 24, 2  # for test
+        warnings.warn("fallback to test case with npop={0}, ngen={1}!".format(npop, ngen), OptimizerWarning)
     opt.evolve(npop, ngen, pre='/home/tangcx/WORK/data')
 
     # Record
     with open('gapop', 'w') as f:
-      f.write(str(opt.pop))
+        f.write(str(opt.pop))
     with open('galog', 'w') as f:
-      f.write(str(opt.log))
+        f.write(str(opt.log))
     with open('gafit', 'w') as f:
-      fit = [ind.fitness.values for ind in opt.pop]
-      f.write(str(fit))
+        fit = [ind.fitness.values for ind in opt.pop]
+        f.write(str(fit))

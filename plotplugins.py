@@ -39,6 +39,7 @@ def _norm_colors(colors):
 
     def norm(x):
         return (x - cmin) / (cmax - cmin)
+
     colors = [norm(color) for color in colors]
 
     return colors
