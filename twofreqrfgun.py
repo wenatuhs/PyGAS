@@ -1,12 +1,14 @@
+import os
 import sys
+import pickle
 import warnings
 
 from astracore import *
 from plotplugins import *
 from gaoptimizer import *
 
-root = '/home/tangcx/projects/twofreqrfgun/beamline'
-core = AstraCore(root)
+beamline = '/home/tangcx/projects/twofreqrfgun/beamline'  # the beamline folder
+simroot = '/home/tangcx/WORK/data'  # the root simulation folder
 
 # Constants
 eta = 0.48  # sigma ratio of the truncated gaussian dist
@@ -67,6 +69,31 @@ def evaluate(x, sim):
     return [nemit_t(data)[0], current_r(data), skewness(data)]
 
 
+def parse_ga_input(arg1, arg2):
+    try:
+        npop = int(arg1)
+    except:
+        try:
+            with open(arg1, 'rb') as f:
+                _ngen, npop = pickle.load(f)
+            print('Evolving based on the previous {} generations...'.format(_ngen))
+        except FileNotFoundError as exc:
+            raise OptimizerError('error in reading population file {}!'.format(arg1)) from exc
+        except:
+            raise
+    try:
+        ngen = int(arg2)
+    except ValueError as exc:
+        raise OptimizerError('error in parsing number of generations!') from exc
+    except:
+        raise
+
+    return npop, ngen
+
+
+# Core initialization
+core = AstraCore(beamline)
+
 # Optimizer setup
 opt = NSGAII(evaluate)
 opt.NDIM = 8
@@ -74,13 +101,19 @@ opt.OBJ = (-1, 1, -1)
 opt.setup()
 
 if __name__ == '__main__':
-    # Let’s rock!
-    try:
-        npop, ngen = (int(n) for n in sys.argv[1:])
-    except:
-        npop, ngen = 24, 2  # for test
-        warnings.warn("fallback to test case with npop={0}, ngen={1}!".format(npop, ngen), OptimizerWarning)
-    opt.evolve(npop, ngen, pre='/home/tangcx/WORK/data')
+    # Parse the input arguments
+    nargs = len(sys.argv[1:])
+    if not nargs:
+        raise OptimizerError('initial population (number) and number of generations are needed!')
+    elif nargs == 1:
+        npop, ngen = parse_ga_input('pop', sys.argv[1])
+    else:
+        npop, ngen = parse_ga_input(sys.argv[1], sys.argv[2])
+    if nargs > 2 and os.path.exists(sys.argv[3]):
+        simroot = sys.argv[3]
+
+    # Let's rock!
+    opt.evolve(npop, ngen, pre=simroot)
 
     # Record
     with open('gapop', 'w') as f:
