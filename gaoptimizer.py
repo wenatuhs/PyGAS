@@ -1,4 +1,5 @@
 import os
+import pickle
 import random
 import warnings
 
@@ -149,6 +150,9 @@ class NSGAII:
             record = stats.compile(pop)
             logbook.record(gen=gen, evals=len(invalid_ind), **record)
             # print(logbook.stream)
+            # Save the populations of the latest generation
+            with open('pop', 'wb') as f:
+                pickle.dump([gen, pop], f)
         # print("Done!")
 
         self.pop = pop
@@ -279,6 +283,9 @@ class SPEA2:
             record = stats.compile(archive)
             logbook.record(gen=gen, evals=len(invalid_ind), **record)
             # print(logbook.stream)
+            # Save the populations of the latest generation
+            with open('pop', 'wb') as f:
+                pickle.dump([gen, archive], f)
         # print("Done!")
 
         self.pop = archive
