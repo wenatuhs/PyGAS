@@ -88,14 +88,20 @@ class NSGAII:
         """ Generate and evolve the population based on NSGA-II.
 
         Keyword arguments:
-        npop -- population size.
+        npop -- population size or list of existed populations.
         ngen -- number of generations.
         seed -- [None] the random seed.
         pre -- [''] relative path of the root of the simulation folders.
         """
-        if npop % 4:
-            raise OptimizerError('population size has to be a multiple of 4!')
-        random.seed(seed)
+        init = 1  # flag show that if it's a new run
+        if isinstance(npop, int):
+            if npop % 4:
+                raise OptimizerError('population size has to be a multiple of 4!')
+            random.seed(seed)
+        else:
+            init = 0
+            ipop = npop
+            npop = len(npop)
         toolbox = self.toolbox
 
         def ind_fitness(ind):
@@ -114,7 +120,10 @@ class NSGAII:
         for gen in tqdm(range(ngen), desc='Generation', ascii=True):
             if not gen:
                 pop = []
-                offspring = toolbox.population(n=npop)
+                if init:
+                    offspring = toolbox.population(n=npop)
+                else:
+                    offspring = ipop
             else:
                 # Vary the population
                 offspring = tools.selTournamentDCD(pop, npop)
