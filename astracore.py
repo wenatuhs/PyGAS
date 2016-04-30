@@ -368,12 +368,10 @@ class AstraCore:
         """
         sim_path = os.path.join(self.root, sim)
         try:
+            out_fnames = [f for f in os.listdir(sim_path) if self.is_output(f)]
+            out_fnames.sort(key=lambda f: int(f.split('.')[1]))
             if full:
-                out_fnames = [os.path.join(sim_path, f) for f in os.listdir(sim_path)
-                              if self.is_output(f)]
-            else:
-                out_fnames = [f for f in os.listdir(sim_path)
-                              if self.is_output(f)]
+                out_fnames = [os.path.join(sim_path, f) for f in out_fnames]
         except FileNotFoundError as exc:
             raise AstraCoreError(
                 'simulation folder {} not found!'.format(sim)) from exc
