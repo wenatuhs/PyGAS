@@ -217,13 +217,19 @@ class SPEA2:
         """ Generate and evolve the population based on SPEA2.
 
         Keyword arguments:
-        npop -- population size.
+        npop -- population size or list of existed populations.
         ngen -- number of generations.
         narc -- capacity of archive.
         seed -- [None] the random seed.
         pre -- [''] relative path of the root of the simulation folders.
         """
-        random.seed(seed)
+        init = 1  # flag show that if it's a new run
+        if isinstance(npop, int):
+            random.seed(seed)
+        else:
+            init = 0
+            ipop = npop
+            npop = len(npop)
         toolbox = self.toolbox
 
         def ind_fitness(ind):
@@ -239,7 +245,10 @@ class SPEA2:
         logbook.header = "gen", "evals", "std", "min", "avg", "max"
 
         # Step 1 Initialization
-        pop = toolbox.population(n=npop)
+        if init:
+            pop = toolbox.population(n=npop)
+        else:
+            pop = ipop
         archive = []
 
         for gen in tqdm(range(ngen), leave=True, ascii=True):
