@@ -207,12 +207,12 @@ class AstraCore:
 
         sim_path = os.path.join(self.root, sim)
         if os.name == 'posix':
-            pass
+            cmd = 'rm -f *'
         else:
             cmd = 'del /s/q/f *'
 
-            rm = Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=sim_path, shell=1)
-            out = rm.communicate()
+        rm = Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=sim_path, shell=(os.name != 'posix'))
+        out = rm.communicate()
 
         if os.name == 'posix':
             cmd = ['find', '.', '-maxdepth', '1', '-type', 'f', '-exec', 'cp', '{}', sim, ';']
