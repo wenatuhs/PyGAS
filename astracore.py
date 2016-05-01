@@ -207,7 +207,7 @@ class AstraCore:
 
         sim_path = os.path.join(self.root, sim)
         if os.name == 'posix':
-            cmd = 'rm -f *'
+            cmd = ['rm', '-rf', '*']
         else:
             cmd = 'del /s/q/f *'
 
