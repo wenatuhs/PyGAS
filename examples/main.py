@@ -14,23 +14,22 @@ simroot = '/home/tangcx/WORK/data'  # the root simulation folder
 eta = 0.48  # sigma ratio of the truncated gaussian dist
 norm_emit = 0.9  # mm.mrad/mm, normalized emittance
 z_stop = 11.0  # m, end position
-ntot = 3000  # number of macro particles
+ntot = 10000  # number of macro particles
+e_gun = 120  # MV/m, gun gradient
 phi_l1 = 0  # deg, linac 1 phase
 phi_l2 = 0  # deg, linac 2 phase
 
 # Variables
 LT = [1e-3, 20e-3]  # ns, laser pulse length
 SIGX = [0.1, 1.0]  # mm, laser radius (gaussian cut at 1 sigma)
-PSOL = [0.2, 0.3]  # m, gun solenoid position
-BSOL = [0.15, 0.25]  # T, gun solenoid strength
-PHIGUN = [-10, 35]  # deg, gun launch phase
-PHICAV = [-180, 0]  # deg, high order cavity phase
-EGUN = [80, 130]  # MV/m, gun gradient
-ECAV = [0, 200]  # MV/m, high order cavity gradient
-EL1 = [10, 50]  # MV/m, linac 1 gradient
-EL2 = [10, 50]  # MV/m, linac 2 gradient
-PL1 = [1.5, 2.5]  # m, linac 1 position
-PL2 = [5.5, 7.0]  # m, linac 2 position
+PSOL = [0.21, 0.3]  # m, gun solenoid position
+BSOL = [0.1, 0.3]  # T, gun solenoid strength
+PHIGUN = [-20, 20]  # deg, gun launch phase
+PHICAV = [0, 360]  # deg, high order cavity phase
+ECAV = [-10, 100]  # MV/m, high order cavity gradient
+EL1 = [0, 35]  # MV/m, linac 1 gradient
+EL2 = [0, 35]  # MV/m, linac 2 gradient
+PL1 = [1, 3]  # m, linac 1 position
 
 
 def recover(x, bound):
@@ -44,12 +43,11 @@ def gen_patch(x):
     b_sol = recover(x[3], BSOL)
     phi_gun = recover(x[4], PHIGUN)
     phi_cav = recover(x[5], PHICAV)
-    e_gun = recover(x[6], EGUN)
-    e_cav = recover(x[7], ECAV)
-    e_l1 = recover(x[8], EL1)
-    e_l2 = recover(x[9], EL2)
-    pos_l1 = recover(x[10], PL1)
-    pos_l2 = recover(x[11], PL2)
+    e_cav = recover(x[6], ECAV)
+    e_l1 = recover(x[7], EL1)
+    e_l2 = recover(x[8], EL2)
+    pos_l1 = recover(x[9], PL1)
+    pos_l2 = pos_l1 + 4
 
     patch = {'input': {'lt': lt,
                        'sig_x': sig_x,
@@ -122,7 +120,7 @@ core = AstraCore(beamline)
 
 # Optimizer setup
 opt = NSGAII(evaluate)
-opt.NDIM = 12
+opt.NDIM = 10
 opt.OBJ = (-1, 1, -1)
 opt.setup()
 
