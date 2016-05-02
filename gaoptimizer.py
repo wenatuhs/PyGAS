@@ -233,15 +233,20 @@ class SPEA2:
         ngen -- number of generations.
         narc -- capacity of archive.
         seed -- [None] the random seed.
-        pre -- [''] relative path of the root of the simulation folders.
+        pre -- [''] path of the root of the simulation folders.
         """
-        init = 1  # flag show that if it's a new run
+        init = 1  # flag show that if it's a new run with no population given
+        arch = 0  # flag show that if it's a new run with archive given
         if isinstance(npop, int):
             random.seed(seed)
         else:
             init = 0
             ipop = npop
             npop = len(npop)
+        if not isinstance(narc, int):
+            arch = 1
+            iarc = narc
+            narc = len(narc)
         toolbox = self.toolbox
 
         def ind_fitness(ind):
@@ -256,12 +261,19 @@ class SPEA2:
         logbook = tools.Logbook()
         logbook.header = "gen", "evals", "std", "min", "avg", "max"
 
+        # If generation history files exist find a new ghist filename
+        fcount = 1
+        while os.path.exists(HISTFNAME + (' {:d}'.format(fcount) if fcount > 1 else '')):
+            fcount += 1
+        ghist = HISTFNAME + (' {:d}'.format(fcount) if fcount > 1 else '')
+
         # Step 1 Initialization
         if init:
             pop = toolbox.population(n=npop)
         else:
             pop = ipop
         archive = []
+        archive = iarc if arch else []
 
         for gen in tqdm(range(ngen), leave=True, ascii=True):
             # Step 2 Fitness assignment
@@ -292,8 +304,8 @@ class SPEA2:
             logbook.record(gen=gen, evals=len(invalid_ind), **record)
             # print(logbook.stream)
             # Save the populations of the latest generation
-            with open('pop', 'wb') as f:
-                pickle.dump([gen, archive], f)
+            with open(ghist, 'ab') as f:
+                pickle.dump([pop, archive], f)
         # print("Done!")
 
         self.pop = archive
