@@ -10,6 +10,8 @@ from deap import tools
 from scoop import futures
 from tqdm import tqdm
 
+HISTFNAME = 'ghist'
+
 
 class OptimizerError(Exception):
     """ Optimizer error class.
@@ -92,7 +94,7 @@ class NSGAII:
         npop -- population size or list of existed populations.
         ngen -- number of generations.
         seed -- [None] the random seed.
-        pre -- [''] relative path of the root of the simulation folders.
+        pre -- [''] path of the root of the simulation folders.
         """
         init = 1  # flag show that if it's a new run
         if isinstance(npop, int):
@@ -116,6 +118,12 @@ class NSGAII:
 
         logbook = tools.Logbook()
         logbook.header = "gen", "evals", "std", "min", "avg", "max"
+
+        # If generation history files exist find a new ghist filename
+        fcount = 1
+        while os.path.exists(HISTFNAME + (' {:d}'.format(fcount) if fcount > 1 else '')):
+            fcount += 1
+        ghist = HISTFNAME + (' {:d}'.format(fcount) if fcount > 1 else '')
 
         # Begin the generational process
         for gen in tqdm(range(ngen), desc='Generation', ascii=True):
@@ -151,8 +159,8 @@ class NSGAII:
             logbook.record(gen=gen, evals=len(invalid_ind), **record)
             # print(logbook.stream)
             # Save the populations of the latest generation
-            with open('pop', 'wb') as f:
-                pickle.dump([gen, pop], f)
+            with open(ghist, 'ab') as f:
+                pickle.dump(pop, f)
         # print("Done!")
 
         self.pop = pop

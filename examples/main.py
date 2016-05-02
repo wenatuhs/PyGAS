@@ -91,10 +91,20 @@ def parse_ga_input(arg1, arg2):
     except:
         try:
             with open(arg1, 'rb') as f:
-                _ngen, npop = pickle.load(f)
-            print('Evolving based on the previous {} generations...'.format(_ngen))
+                _ngen = 0
+                while True:
+                    try:
+                        npop = pickle.load(f)
+                        _ngen += 1
+                    except EOFError:
+                        break
+                    except:
+                        raise
+            if not _ngen:
+                raise OptimizerError('ghist file {} is empty!'.format(arg1))
+            print('Evolving based on the previous {0} generations from ghist file {1}...'.format(_ngen, arg1))
         except FileNotFoundError as exc:
-            raise OptimizerError('error in reading population file {}!'.format(arg1)) from exc
+            raise OptimizerError('error in reading ghist file {}!'.format(arg1)) from exc
         except:
             raise
     try:
@@ -122,7 +132,12 @@ if __name__ == '__main__':
     if not nargs:
         raise OptimizerError('initial population (number) and number of generations are needed!')
     elif nargs == 1:
-        npop, ngen = parse_ga_input('pop', sys.argv[1])
+        fcount = 1
+        while os.path.exists(HISTFNAME + (' {:d}'.format(fcount) if fcount > 1 else '')):
+            fcount += 1
+        fcount -= 1
+        ghist = HISTFNAME + (' {:d}'.format(fcount) if fcount > 1 else '')
+        npop, ngen = parse_ga_input(ghist, sys.argv[1])
     else:
         npop, ngen = parse_ga_input(sys.argv[1], sys.argv[2])
     if nargs > 2 and os.path.exists(sys.argv[3]):
