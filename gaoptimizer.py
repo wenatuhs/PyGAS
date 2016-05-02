@@ -129,10 +129,7 @@ class NSGAII:
         for gen in tqdm(range(ngen), desc='Generation', ascii=True):
             if not gen:
                 pop = []
-                if init:
-                    offspring = toolbox.population(n=npop)
-                else:
-                    offspring = ipop
+                offspring = toolbox.population(n=npop) if init else ipop
             else:
                 # Vary the population
                 offspring = tools.selTournamentDCD(pop, npop)
@@ -268,11 +265,7 @@ class SPEA2:
         ghist = HISTFNAME + (' {:d}'.format(fcount) if fcount > 1 else '')
 
         # Step 1 Initialization
-        if init:
-            pop = toolbox.population(n=npop)
-        else:
-            pop = ipop
-        archive = []
+        pop = toolbox.population(n=npop) if init else ipop
         archive = iarc if arch else []
 
         for gen in tqdm(range(ngen), leave=True, ascii=True):
