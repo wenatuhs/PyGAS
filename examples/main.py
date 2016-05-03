@@ -138,8 +138,12 @@ if __name__ == '__main__':
         npop, ngen = parse_ga_input(ghist, sys.argv[1])
     else:
         npop, ngen = parse_ga_input(sys.argv[1], sys.argv[2])
-    if nargs > 2 and os.path.exists(sys.argv[3]):
-        simroot = sys.argv[3]
+    if nargs > 2:
+        _simroot = os.path.join(core.root, sys.argv[3])
+        if os.path.exists(_simroot):
+            simroot = _simroot
+        else:
+            warnings.warn('customized sim root folder not found, fallback to the default one!')
 
     # Let's rock!
     opt.evolve(npop, ngen, pre=simroot)
