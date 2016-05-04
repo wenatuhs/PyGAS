@@ -73,13 +73,22 @@ def evaluate(x, sim):
     try:
         core.run(patch, sim)
         data = core.get_data(sim, -1, 'g')
-        fitness = [nemit_t(data)[0], current_r(data), skewness(data)]
-        if pnum(data) < 0.9 * ntot:  # a small penalty!
+        emitx = nemit_t(data)[0]
+        sig = sig_z(data)
+        fitness = [emitx, sig]
+        # Constrains
+        if emitx > 1:  # emittance too large
+            fitness[0] += 10
+        if sig > 0.5:  # current too low
+            fitness[1] += 10
+        if pnum(data) < 0.9 * ntot:  # particle loss
+            fitness[0] += 10
+            fitness[1] += 10
+        if skewness(data) > -2:  # too asymmetry
             fitness[0] += 1
-            fitness[1] -= 100
-            fitness[2] += 1
+            fitness[1] += 1
     except:
-        fitness = [100, 0, 0]  # almost death penalty
+        fitness = [100, 100]  # almost death penalty
     return fitness
 
 
@@ -121,7 +130,7 @@ core = AstraCore(beamline)
 # Optimizer setup
 opt = NSGAII(evaluate)
 opt.NDIM = 10
-opt.OBJ = (-1, 1, -1)
+opt.OBJ = (-1, -1)
 opt.setup()
 
 if __name__ == '__main__':
