@@ -112,14 +112,10 @@ def parse_ga_input(arg1, arg2):
             print('Evolving based on the previous {0} generations from ghist file {1}...'.format(_ngen, arg1))
         except FileNotFoundError as exc:
             raise OptimizerError('error in reading ghist file {}!'.format(arg1)) from exc
-        except:
-            raise
     try:
         ngen = int(arg2)
     except ValueError as exc:
         raise OptimizerError('error in parsing number of generations!') from exc
-    except:
-        raise
 
     return npop, ngen
 
