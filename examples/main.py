@@ -30,6 +30,7 @@ ECAV = [-10, 100]  # MV/m, high order cavity gradient
 EL1 = [0, 35]  # MV/m, linac 1 gradient
 EL2 = [0, 35]  # MV/m, linac 2 gradient
 PL1 = [1, 3]  # m, linac 1 position
+PCAV = [0, 0.85]  # m, high order cavity position
 
 
 def recover(x, bound):
@@ -48,6 +49,7 @@ def gen_patch(x):
     e_l2 = recover(x[8], EL2)
     pos_l1 = recover(x[9], PL1)
     pos_l2 = pos_l1 + 4
+    pos_cav = recover(x[10], PCAV)
 
     patch = {'input': {'lt': lt,
                        'sig_x': sig_x,
@@ -58,7 +60,7 @@ def gen_patch(x):
              'cavity': {'lefield': True,
                         'maxe': [e_gun, e_cav, e_l1, e_l2],
                         'phi': [phi_gun, phi_cav, phi_l1, phi_l2],
-                        'c_pos': [0, 0, pos_l1, pos_l2]},
+                        'c_pos': [0, pos_cav, pos_l1, pos_l2]},
              'charge': {'lspch': True,
                         'lmirror': True},
              'solenoid': {'lbfield': True,
@@ -125,7 +127,7 @@ core = AstraCore(beamline)
 
 # Optimizer setup
 opt = NSGAII(evaluate)
-opt.NDIM = 10
+opt.NDIM = 11
 opt.OBJ = (-1, -1)
 opt.setup()
 
