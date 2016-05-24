@@ -7,17 +7,15 @@ from astracore import *
 from plotplugins import *
 from gaoptimizer import *
 
-beamline = '/home/tangcx/projects/twofreqrfgun/beamline'  # the beamline folder
-simroot = '/home/tangcx/WORK/data'  # the root simulation folder
+beamline = '/home/tangcx/projects/ttx/beamline'  # the beamline folder
+simroot = '/home/tangcx/WORK/zhangzhe/data'  # the root simulation folder
 
 # Constants
-eta = 0.48  # sigma ratio of the truncated gaussian dist
-norm_emit = 0.9  # mm.mrad/mm, normalized emittance
-z_stop = 11.0  # m, end position
-ntot = 10000  # number of macro particles
-e_gun = 120  # MV/m, gun gradient
+z_drift = 0.1  # m, end position relative to the linac exit
+ntot = 50000  # number of macro particles
+e_gun = 100  # MV/m, gun gradient
 phi_l1 = 0  # deg, linac 1 phase
-phi_l2 = 0  # deg, linac 2 phase
+shift_lsol = 0.1  # m, position shift of the linac solenoid relative to the linac
 
 # Variables
 LT = [1e-3, 20e-3]  # ns, laser pulse length
@@ -25,12 +23,9 @@ SIGX = [0.1, 1.0]  # mm, laser radius (gaussian cut at 1 sigma)
 PSOL = [0.21, 0.3]  # m, gun solenoid position
 BSOL = [0.1, 0.3]  # T, gun solenoid strength
 PHIGUN = [-20, 20]  # deg, gun launch phase
-PHICAV = [0, 360]  # deg, high order cavity phase
-ECAV = [-10, 100]  # MV/m, high order cavity gradient
 EL1 = [0, 35]  # MV/m, linac 1 gradient
-EL2 = [0, 35]  # MV/m, linac 2 gradient
 PL1 = [1, 3]  # m, linac 1 position
-PCAV = [0, 0.85]  # m, high order cavity position
+BLSOL = [0, 0.3]  # T, linac solenoud strength
 
 
 def recover(x, bound):
@@ -43,29 +38,26 @@ def gen_patch(x):
     pos_sol = recover(x[2], PSOL)
     b_sol = recover(x[3], BSOL)
     phi_gun = recover(x[4], PHIGUN)
-    phi_cav = recover(x[5], PHICAV)
-    e_cav = recover(x[6], ECAV)
-    e_l1 = recover(x[7], EL1)
-    e_l2 = recover(x[8], EL2)
-    pos_l1 = recover(x[9], PL1)
-    pos_l2 = pos_l1 + 4
-    pos_cav = recover(x[10], PCAV)
+    e_l1 = recover(x[5], EL1)
+    pos_l1 = recover(x[6], PL1)
+    b_lsol = recover(x[7], BLSOL)
+    pos_lsol = pos_l1 + shift_lsol
+    z_stop = pos_l1 + 3 + z_drift
 
     patch = {'input': {'lt': lt,
                        'sig_x': sig_x,
-                       'nemit_x': sig_x * eta * norm_emit,
                        'ipart': ntot},
              'newrun': {'auto_phase': True,
                         'zstop': z_stop},
              'cavity': {'lefield': True,
-                        'maxe': [e_gun, e_cav, e_l1, e_l2],
-                        'phi': [phi_gun, phi_cav, phi_l1, phi_l2],
-                        'c_pos': [0, pos_cav, pos_l1, pos_l2]},
+                        'maxe': [e_gun, e_l1],
+                        'phi': [phi_gun, phi_l1],
+                        'c_pos': [0, pos_l1]},
              'charge': {'lspch': True,
                         'lmirror': True},
              'solenoid': {'lbfield': True,
-                          'maxb': [b_sol],
-                          's_pos': [pos_sol]}}
+                          'maxb': [b_sol, b_lsol],
+                          's_pos': [pos_sol, pos_lsol]}}
 
     return patch
 
@@ -81,14 +73,16 @@ def evaluate(x, sim):
         # Constrains
         if emitx > 1:  # emittance too large
             fitness[0] += 10
-        if sig > 0.5:  # current too low
+        if sig > 2:  # current too low
             fitness[1] += 10
+        elif sig < 0.5:  # current too high
+            fitness[0] += 10
         if pnum(data) < 0.9 * ntot:  # particle loss
             fitness[0] += 10
             fitness[1] += 10
-        if skewness(data) > -2:  # too asymmetry
-            fitness[0] += 1
-            fitness[1] += 1
+            # if skewness(data) > -2:  # too asymmetry
+            #     fitness[0] += 1
+            #     fitness[1] += 1
     except:
         fitness = [100, 100]  # almost death penalty
     return fitness
@@ -127,7 +121,7 @@ core = AstraCore(beamline)
 
 # Optimizer setup
 opt = NSGAII(evaluate)
-opt.NDIM = 11
+opt.NDIM = 8
 opt.OBJ = (-1, -1)
 opt.setup()
 
