@@ -24,8 +24,8 @@ PSOL = [0.21, 0.3]  # m, gun solenoid position
 BSOL = [0.1, 0.3]  # T, gun solenoid strength
 PHIGUN = [-20, 20]  # deg, gun launch phase
 EL1 = [0, 35]  # MV/m, linac 1 gradient
-PL1 = [1, 3]  # m, linac 1 position
-BLSOL = [0, 0.3]  # T, linac solenoud strength
+PL1 = [1, 2]  # m, linac 1 position
+BLSOL = [0, 0.3]  # T, linac solenoid strength
 
 
 def recover(x, bound):
@@ -42,7 +42,7 @@ def gen_patch(x):
     pos_l1 = recover(x[6], PL1)
     b_lsol = recover(x[7], BLSOL)
     pos_lsol = pos_l1 + shift_lsol
-    z_stop = pos_l1 + 3 + z_drift
+    z_stop = 5.1
 
     patch = {'input': {'lt': lt,
                        'sig_x': sig_x,
@@ -71,18 +71,14 @@ def evaluate(x, sim):
         sig = sig_z(data)
         fitness = [emitx, sig]
         # Constrains
-        if emitx > 1:  # emittance too large
-            fitness[0] += 10
-        if sig > 2:  # current too low
-            fitness[1] += 10
-        elif sig < 0.5:  # current too high
-            fitness[0] += 10
+        if emitx > 2:  # emittance too large
+            fitness[0] += (emitx - 2) ** 2
+        if sig > 1.5:  # current too low
+            fitness[1] += (sig - 1.5) ** 2
+        elif sig < 0.2:  # current too high
+            fitness[0] += (1 / sig - 5) ** 2
         if pnum(data) < 0.9 * ntot:  # particle loss
-            fitness[0] += 10
-            fitness[1] += 10
-            # if skewness(data) > -2:  # too asymmetry
-            #     fitness[0] += 1
-            #     fitness[1] += 1
+            fitness = [100, 100]  # almost death penalty
     except:
         fitness = [100, 100]  # almost death penalty
     return fitness
