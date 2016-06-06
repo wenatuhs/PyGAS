@@ -3,25 +3,32 @@ import sys
 import pickle
 import warnings
 
+import numpy as np
+import scipy.constants as const
+
 from astracore import *
 from plotplugins import *
 from gaoptimizer import *
 
-beamline = '/home/tangcx/projects/ttx/beamline'  # the beamline folder
+beamline = '/home/tangcx/projects/ttxmod/beamline'  # the beamline folder
 simroot = '/home/tangcx/WORK/zhangzhe/data'  # the root simulation folder
 
 # Constants
 z_drift = 0.1  # m, end position relative to the linac exit
+z_stop = 5.1  # m, end position of the simulation
+qtot = 0.2  # nC, total charge
 ntot = 50000  # number of macro particles
-e_gun = 100  # MV/m, gun gradient
 phi_l1 = 0  # deg, linac 1 phase
 shift_lsol = 0.1  # m, position shift of the linac solenoid relative to the linac
+e_photon = 4.66  # eV, photon energy
+phi_w = 4.31  # eV, work function
 
 # Variables
 LT = [1e-3, 20e-3]  # ns, laser pulse length
 SIGX = [0.1, 1.0]  # mm, laser radius (gaussian cut at 1 sigma)
 PSOL = [0.21, 0.3]  # m, gun solenoid position
 BSOL = [0.1, 0.3]  # T, gun solenoid strength
+EGUN = [80, 150]  # MV/m, gun gradient
 PHIGUN = [-20, 20]  # deg, gun launch phase
 EL1 = [0, 35]  # MV/m, linac 1 gradient
 PL1 = [1, 2]  # m, linac 1 position
@@ -37,16 +44,22 @@ def gen_patch(x):
     sig_x = recover(x[1], SIGX)
     pos_sol = recover(x[2], PSOL)
     b_sol = recover(x[3], BSOL)
-    phi_gun = recover(x[4], PHIGUN)
-    e_l1 = recover(x[5], EL1)
-    pos_l1 = recover(x[6], PL1)
-    b_lsol = recover(x[7], BLSOL)
+    e_gun = recover(x[4], EGUN)
+    phi_gun = recover(x[5], PHIGUN)
+    e_l1 = recover(x[6], EL1)
+    pos_l1 = recover(x[7], PL1)
+    b_lsol = recover(x[8], BLSOL)
     pos_lsol = pos_l1 + shift_lsol
-    z_stop = 5.1
+
+    phi_sch = np.sqrt(const.e * e_gun / (4 * const.pi * const.epsilon_0)) * 1e3
+    phi_eff = phi_w - phi_sch
 
     patch = {'input': {'lt': lt,
                        'sig_x': sig_x,
-                       'ipart': ntot},
+                       'ipart': ntot,
+                       'q_total': qtot,
+                       'phi_eff': phi_eff,
+                       'e_photon': e_photon},
              'newrun': {'auto_phase': True,
                         'zstop': z_stop},
              'cavity': {'lefield': True,
@@ -71,10 +84,10 @@ def evaluate(x, sim):
         sig = sig_z(data)
         fitness = [emitx, sig]
         # Constrains
-        if emitx > 2:  # emittance too large
-            fitness[0] += (emitx - 2) ** 2
-        if sig > 1.5:  # current too low
-            fitness[1] += (sig - 1.5) ** 2
+        if emitx > 1:  # emittance too large
+            fitness[0] += (emitx - 1) ** 2
+        if sig > 1.2:  # current too low
+            fitness[1] += (sig - 1.2) ** 2
         elif sig < 0.2:  # current too high
             fitness[0] += (1 / sig - 5) ** 2
         if pnum(data) < 0.9 * ntot:  # particle loss
@@ -117,7 +130,7 @@ core = AstraCore(beamline)
 
 # Optimizer setup
 opt = NSGAII(evaluate)
-opt.NDIM = 8
+opt.NDIM = 9
 opt.OBJ = (-1, -1)
 opt.setup()
 
