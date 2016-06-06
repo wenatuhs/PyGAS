@@ -51,7 +51,7 @@ def gen_patch(x):
     b_lsol = recover(x[8], BLSOL)
     pos_lsol = pos_l1 + shift_lsol
 
-    phi_sch = np.sqrt(const.e * e_gun / (4 * const.pi * const.epsilon_0)) * 1e3
+    phi_sch = float(np.sqrt(const.e * e_gun / (4 * const.pi * const.epsilon_0)) * 1e3)
     phi_eff = phi_w - phi_sch
 
     patch = {'input': {'lt': lt,
